@@ -1,6 +1,6 @@
 # Analisis Kimia Farma 2020–2023
 
-Status: empat CSV berhasil diimpor dan `kf_analisis_final` berhasil dibuat di BigQuery. Semua tujuh pemeriksaan ASSERT lulus pada 25 September 2026. Project: `intership-project-kimia-farma`, dataset: `kimia_farma`, lokasi: US. Dashboard dan bahan presentasi sedang disusun. Repository ini menyimpan SQL dan dokumentasi analisis.
+Status: empat CSV berhasil diimpor dan `kf_analisis_final` berhasil dibuat di BigQuery. Semua tujuh pemeriksaan ASSERT lulus pada 25 September 2026. Project: `intership-project-kimia-farma`, dataset: `kimia_farma`, lokasi: US. Dashboard enam halaman sudah dibuat. Repository ini menyimpan SQL dan dokumentasi analisis; presentasi dan naskah pembicara disimpan terpisah.
 
 ## Hasil pemeriksaan sumber
 
@@ -21,8 +21,8 @@ Inventory memiliki 780.996 baris tambahan pada pasangan branch_id/product_id yan
 2. Impor setiap CSV dengan nama tabel yang sama dengan nama file tanpa `.csv`. Sumber file tersedia pada tautan di bawah.
 3. Pilih CSV, header 1 baris, delimiter koma, quote tanda petik ganda. Gunakan schema eksplisit berikut sesuai urutan kolom CSV.
 4. Gunakan `date` bertipe STRING pada tabel transaksi agar tanggal bulan/hari/tahun diproses secara eksplisit oleh SQL.
-5. Kedua file SQL sudah memakai Project ID `intership-project-kimia-farma`.
-6. Jalankan `01_tabel_analisis.sql`, lalu query pada `02_analisis_dashboard.sql`. Script pertama memakai CREATE TABLE dan akan berhenti bila `kf_analisis_final` sudah ada, agar hasil lama tidak tertimpa.
+5. Ketiga file SQL sudah memakai Project ID `intership-project-kimia-farma`.
+6. Jalankan `01_tabel_analisis.sql`, lalu query pada `02_analisis_dashboard.sql` dan `03_insight_farmasi.sql`. Script pertama memakai CREATE TABLE dan akan berhenti bila `kf_analisis_final` sudah ada, agar hasil lama tidak tertimpa.
 
 Schema (format Edit as text pada form pembuatan tabel):
 
@@ -50,7 +50,7 @@ Top 5 cabang diurutkan berdasarkan rating cabang menurun, lalu rata-rata rating 
 
 ## Angka kontrol lokal
 
-Angka berikut dihitung dari CSV dengan Python, belum merupakan hasil eksekusi BigQuery. Cocokkan total setelah SQL dijalankan.
+Angka tahunan berikut dihitung ulang dari CSV sebagai kontrol analisis. Total baris dan nett sales direkonsiliasi oleh ASSERT BigQuery. Total seluruh periode: 672.458 transaksi, nett sales Rp321.171.190.319, dan estimasi profit Rp91.214.988.059,85.
 
 | Tahun | Transaksi | Nett sales (Rp) | Estimasi profit (Rp) |
 |---|---:|---:|---:|
@@ -59,17 +59,33 @@ Angka berikut dihitung dari CSV dengan Python, belum merupakan hasil eksekusi Bi
 | 2022 | 168.642 | 80.578.445.844 | 22.883.598.882,80 |
 | 2023 | 167.468 | 80.117.292.611 | 22.757.862.557,90 |
 
-## Rancangan Looker Studio
+## Dashboard
 
-Hubungkan tabel `kf_analisis_final` menggunakan konektor BigQuery. Judul: Kinerja Bisnis Kimia Farma 2020–2023. Gunakan kontrol rentang tanggal, provinsi, dan kategori cabang.
+[Buka dashboard Kinerja Bisnis Kimia Farma 2020–2023](https://datastudio.google.com/reporting/35ecf4ad-c21a-4a19-8b89-c035c303c1bf)
 
-- Scorecard: COUNT_DISTINCT(transaction_id), SUM(nett_sales), SUM(nett_profit), AVG(rating_transaksi).
-- Grafik kolom pendapatan menurut tahun, dengan nett_sales dijumlahkan.
-- Dua grafik batang Top 10 provinsi: jumlah transaksi dan nett sales.
-- Tabel Top 5 cabang: branch_id, branch_name, kota, rating cabang (MAX), rating transaksi (AVG), dan jumlah transaksi. Urutan mengikuti metode di atas.
-- Peta Indonesia: provinsi sebagai wilayah dan SUM(nett_profit). Periksa pengenalan nama provinsi; jangan menghilangkan wilayah yang gagal dikenali tanpa catatan.
-- Snapshot tabel transaksi: tanggal, ID, cabang, produk, nett sales, nett profit. Hindari menampilkan nama pelanggan pada dashboard publik.
-- Tambahkan catatan asumsi profit dan batas tanggal data. Semua grafik harus merespons filter yang sama.
+Sumber dashboard adalah tabel BigQuery `kf_analisis_final`. Filter tanggal dan provinsi tersedia pada tingkat laporan.
+
+1. **Ringkasan Kinerja:** total transaksi, nett sales, estimasi profit, dan pendapatan per tahun.
+2. **Kinerja Provinsi:** Top 10 provinsi berdasarkan jumlah transaksi dan nett sales.
+3. **Persebaran Profit:** peta Indonesia berdasarkan estimasi profit provinsi.
+4. **Rating Cabang:** Top 5 cabang berdasarkan rating cabang tertinggi, lalu rata-rata rating transaksi terendah; ditampilkan ID cabang, kota, jumlah transaksi, dan kedua rating.
+5. **Snapshot Data:** ID transaksi, tanggal, ID cabang, ID produk, nett sales, dan estimasi profit. Nama pelanggan tidak ditampilkan.
+6. **Insight Farmasi:** narasi statis untuk keseluruhan periode 2020–2023, sehingga angka pada halaman ini tidak berubah mengikuti filter.
+
+## Insight bisnis farmasi
+
+Temuan ini berlaku untuk dataset latihan, bukan laporan keuangan atau gambaran operasional aktual perusahaan.
+
+| Temuan | Implikasi dan tindak lanjut |
+|---|---|
+| Sales 2023 turun sekitar 0,57% dibanding 2022 | Periksa pola bulanan dan komposisi produk sebelum menyimpulkan penyebab. |
+| Jawa Barat menghasilkan Rp94,87 miliar atau 29,54% sales, dengan 510 cabang | Prioritaskan kapasitas layanan wilayah besar, tetapi bandingkan produktivitas per cabang. |
+| Sales per cabang selama empat tahun: Jawa Barat Rp186,02 juta; Kalimantan Selatan Rp189,62 juta | Kalimantan Selatan sekitar 1,94% lebih tinggi; belum disesuaikan hari aktif, sehingga tidak cukup sebagai dasar ekspansi. |
+| Kode kategori R06 menghasilkan Rp64,86 miliar atau 20,20% sales; tiga kategori teratas menyumbang 53,34% | Validasi kecocokan kode dan nama produk sebelum menafsirkan kelas terapi atau menetapkan assortment. |
+| Diskon Rp26,05 miliar, sekitar 7,50% dari nilai sebelum diskon | Evaluasi promosi membutuhkan kelompok pembanding, unit terjual, dan biaya aktual; angka ini tidak membuktikan efek kausal diskon. |
+| Cabang 82157 di Tarakan memiliki rating cabang 5 dan rata-rata rating transaksi 3,905 | Tinjau proses layanan dan umpan balik transaksi; selisih rating belum menjelaskan penyebab. |
+
+Untuk analisis operasional farmasi lanjutan, tambahkan unit terjual, batch, tanggal kedaluwarsa, stok per tanggal, dan lead time pengadaan. Data saat ini belum dapat membuktikan stockout, kehilangan penjualan, atau kerugian akibat kedaluwarsa.
 
 ## Sumber
 
@@ -87,5 +103,5 @@ Project memakai BigQuery Sandbox. Tabel analisis dibuat tanpa partisi tanggal ka
 
 ## Bukti eksekusi
 
-Job BigQuery berhasil: `job_Wm7sS0fD5y1DoQPuFa94z_0Mion9` (US), delapan statement sukses termasuk tujuh ASSERT. Dashboard dalam pengerjaan: https://datastudio.google.com/reporting/35ecf4ad-c21a-4a19-8b89-c035c303c1bf
+Job BigQuery berhasil: `job_Wm7sS0fD5y1DoQPuFa94z_0Mion9` (US), delapan statement sukses termasuk tujuh ASSERT. Dashboard: [Kinerja Bisnis Kimia Farma 2020–2023](https://datastudio.google.com/reporting/35ecf4ad-c21a-4a19-8b89-c035c303c1bf).
 

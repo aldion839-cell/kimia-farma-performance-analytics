@@ -103,5 +103,5 @@ Project memakai BigQuery Sandbox. Tabel analisis dibuat tanpa partisi tanggal ka
 
 ## Bukti eksekusi
 
-Job BigQuery berhasil: `job_Wm7sS0fD5y1DoQPuFa94z_0Mion9` (US), delapan statement sukses termasuk tujuh ASSERT. Dashboard: [Kinerja Bisnis Kimia Farma 2020–2023](https://datastudio.google.com/reporting/35ecf4ad-c21a-4a19-8b89-c035c303c1bf).
+Job BigQuery berhasil: `job_Wm7sS0fD5y1DoQPuFa94z_0Mion9` (US), delapan statement sukses termasuk tujuh ASSERT. Dashboard: [Kinerja Bisnis Kimia Farma 2020–2023](https://datastudio.google.com/u/0/reporting/203c39a7-638c-4fd9-ad4b-26bea3ecaf0e/page/p_6rzywaphtd).
 
